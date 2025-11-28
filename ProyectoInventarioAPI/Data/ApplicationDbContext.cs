@@ -14,6 +14,7 @@ namespace ProyectoInventarioAPI.Data
         // DbSets: Representan tus tablas
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Producto> Productos { get; set; }
+        public DbSet<ReporteProducto> ReporteProductos { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Venta> Ventas { get; set; }
         public DbSet<DetalleVenta> DetalleVentas { get; set; }

@@ -1,7 +1,6 @@
 ﻿using ProyectoInventarioAPI.Models;
 using ProyectoInventarioAPI.Repositories;
 
-
 namespace ProyectoInventarioAPI.Services
 {
     public class UsuarioService : IUsuarioService

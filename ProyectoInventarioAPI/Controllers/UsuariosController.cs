@@ -1,49 +1,71 @@
-﻿using ProyectoInventarioAPI.Models;
-using ProyectoInventarioAPI.Repositories;
+﻿using Microsoft.AspNetCore.Mvc;
+using ProyectoInventarioAPI.Models;
+using ProyectoInventarioAPI.Services;
 
-namespace ProyectoInventarioAPI.Services
+namespace ProyectoInventarioAPI.Controllers
 {
-    public class UsuarioService : IUsuarioService
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsuariosController : ControllerBase
     {
-        private readonly IRepository<Usuario> _repository;
+        private readonly IUsuarioService _usuarioService;
 
-        public UsuarioService(IRepository<Usuario> repository)
+        public UsuariosController(IUsuarioService usuarioService)
         {
-            _repository = repository;
+            _usuarioService = usuarioService;
         }
 
-        public async Task<IEnumerable<Usuario>> ObtenerTodos()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuarios()
         {
-            return await _repository.GetAllAsync();
+            return Ok(await _usuarioService.ObtenerTodos());
         }
 
-        public async Task<Usuario?> ObtenerPorId(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Usuario>> GetUsuario(int id)
         {
-            return await _repository.GetByIdAsync(id);
+            var usuario = await _usuarioService.ObtenerPorId(id);
+            if (usuario == null) return NotFound();
+            return Ok(usuario);
         }
 
-        public async Task<Usuario> RegistrarUsuario(Usuario usuario)
+        [HttpPost]
+        public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
         {
-            // Regla de Negocio: Email único
-            var existente = await _repository.FindAsync(u => u.Email == usuario.Email);
-            if (existente != null)
+            try
             {
-                throw new Exception("El correo electrónico ya está registrado.");
+                var nuevo = await _usuarioService.RegistrarUsuario(usuario);
+                return CreatedAtAction("GetUsuario", new { id = nuevo.UsuarioId }, nuevo);
             }
-
-            await _repository.AddAsync(usuario);
-            return usuario;
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        public async Task<Usuario?> ValidarCredenciales(string email, string password)
+        [HttpPost("login")]
+        public async Task<ActionResult<Usuario>> Login([FromBody] LoginDto login)
         {
-            // Busca usuario por email y password (simple, sin encriptar por ahora)
-            return await _repository.FindAsync(u => u.Email == email && u.PasswordHash == password);
+            var usuario = await _usuarioService.ValidarCredenciales(login.Email, login.Password);
+
+            if (usuario == null)
+                return Unauthorized("Credenciales incorrectas.");
+
+            return Ok(usuario);
         }
 
-        public async Task ActualizarUsuario(Usuario usuario)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUsuario(int id, Usuario usuario)
         {
-            await _repository.UpdateAsync(usuario);
+            if (id != usuario.UsuarioId) return BadRequest();
+            await _usuarioService.ActualizarUsuario(usuario);
+            return NoContent();
         }
+    }
+
+    public class LoginDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }

@@ -6,7 +6,7 @@ namespace ProyectoInventarioAPI.Repositories
     {
         Task<IEnumerable<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id);
-        Task<T?> FindAsync(Expression<Func<T, bool>> predicate); // Para buscar por código, etc.
+        Task<T?> FindAsync(Expression<Func<T, bool>> predicate);
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(int id);

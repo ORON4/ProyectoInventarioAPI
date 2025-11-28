@@ -8,7 +8,7 @@ namespace ProyectoInventarioAPI.Services
     {
         private readonly IRepository<Producto> _repository;
 
-        // Inyectamos el Repositorio, NO el DbContext directamente
+        
         public ProductoService(IRepository<Producto> repository)
         {
             _repository = repository;
@@ -16,11 +16,9 @@ namespace ProyectoInventarioAPI.Services
 
         public async Task<IEnumerable<Producto>> ObtenerTodos()
         {
-            // Aquí podríamos filtrar solo productos activos, por ejemplo:
+            
             var productos = await _repository.GetAllAsync();
-            // Nota: Con el repositorio genérico básico, no traemos la "Categoria" (Join).
-            // Si necesitas la categoría, tendrías que modificar el repositorio para aceptar "Includes"
-            // o crear un ProductoRepository específico. Por ahora, funcionará básico.
+            
             return productos;
         }
 
@@ -31,20 +29,20 @@ namespace ProyectoInventarioAPI.Services
 
         public async Task<Producto?> ObtenerPorCodigo(string codigo)
         {
-            // Usamos el método FindAsync del repositorio genérico
+           
             return await _repository.FindAsync(p => p.CodigoBarras == codigo);
         }
 
         public async Task<Producto> CrearProducto(Producto producto)
         {
-            // Regla de Negocio: Validar código duplicado
+            
             var existente = await _repository.FindAsync(p => p.CodigoBarras == producto.CodigoBarras);
             if (existente != null)
             {
                 throw new Exception("Ya existe un producto con ese código de barras.");
             }
 
-            // Regla de Negocio: Validar precios
+          
             if (producto.PrecioVenta < producto.PrecioCompra)
             {
                 throw new Exception("El precio de venta no puede ser menor al costo.");
