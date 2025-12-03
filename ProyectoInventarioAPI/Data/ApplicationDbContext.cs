@@ -18,6 +18,8 @@ namespace ProyectoInventarioAPI.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Venta> Ventas { get; set; }
         public DbSet<DetalleVenta> DetalleVentas { get; set; }
+        public DbSet<EntradaInventario> EntradasInventario { get; set; }
+        public DbSet<DetalleEntrada> DetalleEntradas { get; set; }
         // Agrega aquí MovimientosInventario y Devoluciones si las implementas igual
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

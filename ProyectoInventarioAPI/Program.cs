@@ -17,6 +17,8 @@ builder.Services.AddScoped<IVentaService, VentaService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>(); 
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IInventarioService, InventarioService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

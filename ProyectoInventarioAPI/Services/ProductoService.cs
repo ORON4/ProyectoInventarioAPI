@@ -54,7 +54,26 @@ namespace ProyectoInventarioAPI.Services
 
         public async Task ActualizarProducto(Producto producto)
         {
-            await _repository.UpdateAsync(producto);
+            // Buscamos el producto original en la Base de Datos
+            var productoExistente = await _repository.GetByIdAsync(producto.ProductoId);
+
+            if (productoExistente == null)
+            {
+                throw new Exception("El producto no existe.");
+            }
+
+            //  ACTUALIZAMOS SOLO LOS DATOS PERMITIDOS 
+            productoExistente.Nombre = producto.Nombre;
+            productoExistente.Descripcion = producto.Descripcion;
+            productoExistente.CategoriaId = producto.CategoriaId;
+            productoExistente.PrecioCompra = producto.PrecioCompra;
+            productoExistente.PrecioVenta = producto.PrecioVenta;
+            productoExistente.StockMinimo = producto.StockMinimo;
+            productoExistente.ImagenUrl = producto.ImagenUrl;
+            productoExistente.Activo = producto.Activo;
+
+            //Guardamos los cambios
+            await _repository.UpdateAsync(productoExistente);
         }
 
         public async Task EliminarProducto(int id)

@@ -18,7 +18,7 @@ namespace ProyectoInventarioAPI.Models
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
 
-        // Roles: "Administrador", "Gerente", "Cajero" [cite: 161]
+        // Roles
         [Required]
         public string Rol { get; set; } = "Cajero";
 
