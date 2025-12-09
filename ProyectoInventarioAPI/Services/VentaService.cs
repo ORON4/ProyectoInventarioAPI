@@ -87,5 +87,58 @@ namespace ProyectoInventarioAPI.Services
                 throw; // Re-lanzamos el error para que el Controller lo vea
             }
         }
+
+        public async Task<ResultadoCorteDto> RealizarCorteDelDia()
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var hoy = DateTime.Today;
+
+                // 1. Obtener ventas de hoy
+                var ventasDeHoy = await _context.Ventas
+                    .Where(v => v.FechaVenta.Date == hoy) // Ojo: en tu modelo es FechaVenta, no Fecha
+                    .ToListAsync();
+
+                if (!ventasDeHoy.Any())
+                {
+                    return new ResultadoCorteDto { Exito = false, Mensaje = "No hay ventas hoy." };
+                }
+
+                // 2. Calcular totales
+                decimal total = ventasDeHoy.Sum(v => v.Total);
+                int cantidad = ventasDeHoy.Count;
+
+                // 3. Guardar Historial
+                var corte = new CorteDiario
+                {
+                    Fecha = hoy,
+                    Total = total,
+                    CantidadTransacciones = cantidad,
+                    HoraCorte = DateTime.Now
+                };
+                _context.CortesDiarios.Add(corte);
+
+                // 4. Borrar ventas
+                _context.Ventas.RemoveRange(ventasDeHoy);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new ResultadoCorteDto
+                {
+                    Exito = true,
+                    Mensaje = "Corte realizado correctamente",
+                    Total = total,
+                    Transacciones = cantidad
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new ResultadoCorteDto { Exito = false, Mensaje = $"Error: {ex.Message}" };
+            }
+        }
     }
 }

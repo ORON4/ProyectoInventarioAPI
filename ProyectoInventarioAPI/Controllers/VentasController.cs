@@ -48,58 +48,20 @@ namespace ProyectoInventarioAPI.Controllers
         [HttpPost("CorteDelDia")]
         public async Task<IActionResult> RealizarCorteDelDia()
         {
-            // Usamos una transacción para asegurar que no se borre nada si falla el reporte
-            using var transaction = _context.Database.BeginTransaction();
+            // Ya no usamos _context aquí, delegamos al servicio
+            var resultado = await _ventaService.RealizarCorteDelDia();
 
-            try
+            if (!resultado.Exito)
             {
-                var hoy = DateTime.Today;
-
-                // 1. Obtener las ventas de hoy
-                var ventasDeHoy = await _context.Ventas
-                    .Where(v => v.Fecha.Date == hoy)
-                    .ToListAsync();
-
-                if (!ventasDeHoy.Any())
-                {
-                    return BadRequest("No hay ventas registradas para el día de hoy.");
-                }
-
-                // 2. Calcular los datos del corte
-                decimal totalVendido = ventasDeHoy.Sum(v => v.Total);
-                int cantidadVentas = ventasDeHoy.Count;
-
-                // 3. (Opcional) Guardar en una tabla de Historial de Cortes
-                // Esto es CRÍTICO para no perder la contabilidad financiera
-                var nuevoCorte = new CorteDiario
-                {
-                    Fecha = hoy,
-                    Total = totalVendido,
-                    CantidadTransacciones = cantidadVentas,
-                    HoraCorte = DateTime.Now
-                };
-                _context.CortesDiarios.Add(nuevoCorte);
-
-                // 4. Borrar las ventas individuales (según tu requerimiento)
-                _context.Ventas.RemoveRange(ventasDeHoy);
-
-                // 5. Guardar cambios y confirmar transacción
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                // 6. Retornar el resumen al frontend
-                return Ok(new
-                {
-                    Mensaje = "Corte realizado con éxito",
-                    Total = totalVendido,
-                    Transacciones = cantidadVentas
-                });
+                return BadRequest(new { Mensaje = resultado.Mensaje });
             }
-            catch (Exception ex)
+
+            return Ok(new
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, $"Error al realizar el corte: {ex.Message}");
-            }
+                resultado.Mensaje,
+                resultado.Total,
+                resultado.Transacciones
+            });
         }
     }
 }
