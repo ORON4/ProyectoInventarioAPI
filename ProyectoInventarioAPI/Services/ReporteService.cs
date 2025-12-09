@@ -18,6 +18,7 @@ namespace ProyectoInventarioAPI.Services
             var hoy = DateTime.Today;
             var manana = hoy.AddDays(1);
 
+            
             var ventasHoy = await _context.Ventas
                 .Where(v => v.FechaVenta >= hoy && v.FechaVenta < manana)
                 .Include(v => v.Usuario)
@@ -34,6 +35,7 @@ namespace ProyectoInventarioAPI.Services
 
         public async Task<IEnumerable<Producto>> ObtenerStockBajo()
         {
+            // El stock bajo es general, no depende de la fecha, este se queda igual
             return await _context.Productos
                 .Where(p => p.StockActual <= p.StockMinimo && p.Activo)
                 .ToListAsync();
@@ -41,8 +43,13 @@ namespace ProyectoInventarioAPI.Services
 
         public async Task<object> ObtenerMasVendidos()
         {
+            var hoy = DateTime.Today;
+            var manana = hoy.AddDays(1);
+
             var masVendidos = await _context.DetalleVentas
                 .Include(d => d.Producto)
+                .Include(d => d.Venta) // Necesario para filtrar por fecha
+                .Where(d => d.Venta.FechaVenta >= hoy && d.Venta.FechaVenta < manana) // 1. FILTRO DE FECHA
                 .GroupBy(d => d.ProductoId)
                 .Select(g => new
                 {
@@ -51,15 +58,19 @@ namespace ProyectoInventarioAPI.Services
                     Ingresos = g.Sum(d => d.Cantidad * d.PrecioUnitario)
                 })
                 .OrderByDescending(r => r.CantidadTotal)
-                .Take(5) // Top 5
+                // .Take(5)  <--- 2. ELIMINADO para que traiga TODOS los productos
                 .ToListAsync();
 
             return masVendidos;
         }
-
         public async Task<object> ObtenerVentasPorMetodoPago()
         {
+            var hoy = DateTime.Today;
+            var manana = hoy.AddDays(1);
+
+            // CORRECCIÓN: Filtramos las ventas antes de agruparlas
             var resultado = await _context.Ventas
+                .Where(v => v.FechaVenta >= hoy && v.FechaVenta < manana) // <--- FILTRO AGREGADO
                 .GroupBy(v => v.MetodoPago)
                 .Select(g => new
                 {
