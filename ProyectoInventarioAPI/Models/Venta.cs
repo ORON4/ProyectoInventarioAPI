@@ -7,10 +7,8 @@ namespace ProyectoInventarioAPI.Models
     public class Venta
     {
         [Key]
-        public int VentaId { get; set; }
-
-        [Required]
-        public string NumeroVenta { get; set; } = string.Empty; // UUID o Folio
+        public int VentaId { get; set; } 
+        public string NumeroVenta { get; set; } = string.Empty; // Folio
 
         public int UsuarioId { get; set; } // Empleado que hizo la venta
 
@@ -25,7 +23,7 @@ namespace ProyectoInventarioAPI.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal Total { get; set; }
 
-        // "Efectivo", "Tarjeta", "Transferencia" [cite: 216]
+
         public string MetodoPago { get; set; } = "Efectivo";
 
         // "Completada", "Cancelada", "Devuelta"

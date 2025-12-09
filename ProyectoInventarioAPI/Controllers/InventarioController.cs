@@ -40,7 +40,7 @@ namespace ProyectoInventarioAPI.Controllers
         public async Task<ActionResult<EntradaResponseDto>> GetEntrada(int id)
         {
             var entrada = await _inventarioService.ObtenerPorId(id);
-
+            
             if (entrada == null)
             {
                 return NotFound("No se encontró la entrada de inventario.");
